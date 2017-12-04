@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>cz.expertkom.ju</groupId>
+  <artifactId>L08-HomeWork-KosikCz-services</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  
+  <dependencies>
+  	
+  	<dependency>
+  		<groupId>cz.expertkom.ju</groupId>
+  		<artifactId>L08-HomeWork-KosikCz-interfaces</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  
+	
+	<dependency>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-context</artifactId>
+	    <version>4.3.12.RELEASE</version>
+	</dependency>
+	
+	<dependency>
+    	<groupId>com.mashape.unirest</groupId>
+    	<artifactId>unirest-java</artifactId>
+    	<version>1.4.9</version>
+	</dependency>
+	
+	<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+	<dependency>
+	    <groupId>commons-io</groupId>
+	    <artifactId>commons-io</artifactId>
+	    <version>2.5</version>
+	</dependency>
+
+	<!-- https://mvnrepository.com/artifact/log4j/log4j -->
+	<dependency>
+	    <groupId>log4j</groupId>
+	    <artifactId>log4j</artifactId>
+	    <version>1.2.17</version>
+	</dependency>
+	
+  </dependencies>
+</project>
