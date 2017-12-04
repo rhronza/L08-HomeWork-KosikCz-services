@@ -33,6 +33,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		pDto.setId(p.getId());
 		pDto.setName(p.getName());
 		pDto.setPrice(p.getPrice());
+		pDto.setProductId(p.getProductId());
 		pDto.setInsertedTimeStamp(p.getInsertedTimeStamp());
 		pDto.setUpdatedTimeStamp(p.getUpdatedTimeStamp());
 		return pDto;
@@ -50,6 +51,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		Product pr = new Product();
 		pr.setName(pDto.getName());
 		pr.setPrice(pDto.getPrice());
+		pr.setProductId(pDto.getProductId());
 		pr.setInsertedTimeStamp(LocalDateTime.now());
 		pRep.save(pr);
 	}
@@ -63,6 +65,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		pr = pRep.findOne(id);
 		pr.setName(pDto.getName());
 		pr.setPrice(pDto.getPrice());
+		pr.setProductId(pDto.getProductId());
 		pr.setUpdatedTimeStamp(LocalDateTime.now());
 		pRep.save(pr);
 	}
