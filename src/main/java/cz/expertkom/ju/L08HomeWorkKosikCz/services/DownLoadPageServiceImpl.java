@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.print.event.PrintServiceAttributeListener;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -15,6 +14,9 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 
 import cz.expertkom.ju.L08HomeWorkKosikCz.Entity.Product;
 import cz.expertkom.ju.L08HomeWorkKosikCz.Entity.ProductDto;
@@ -52,10 +54,11 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 	private List<String> listWebPages = new ArrayList<String>();
 	
 	private String nameFileTxt ="";
+	
+	//int i = 0;
 
 	@PostConstruct 
 	public void initListWebPages() {
-		
 		listWebPages.add("https://www.kosik.cz/mlecne-a-chlazene");
 		listWebPages.add("https://www.kosik.cz/maso-a-ryby");
 		listWebPages.add("https://www.kosik.cz/ovoce-a-zelenina");
@@ -69,7 +72,6 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 		listWebPages.add("https://www.kosik.cz/domacnost-a-zahrada");
 		listWebPages.add("https://www.kosik.cz/drogerie");
 		listWebPages.add("https://www.kosik.cz/trafika");
-		//listWebPages.add("https://www.kosik.cz");
 	}
 	
 	public void start() {
@@ -80,7 +82,6 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 		/* iterace seznamu s stahování stránek do txt souboru */
 		/* -------------------------------------------------- */
 		
-		/*
 		System.out.println("Start načítání....");
 		
 		for (String uriSection: listWebPages) {
@@ -91,7 +92,7 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 				logger.error("Problém při čtení ze stránky:"+uriSection,e1);
 				System.out.println("Problém při čtení ze stránky:"+uriSection+", "+e1.getLocalizedMessage());
 			}
-			nameFileTxt = String.format("%03d", i)+"_"+uriSection.replaceAll("https://www.kosik.cz/", "")+".txt";
+			nameFileTxt = String.format("%03d", indexTxtFile)+"_"+uriSection.replaceAll("https://www.kosik.cz/", "")+".txt";
 			File outPutFileName = new File(nameFileTxt);
 			try {
 				FileUtils.writeStringToFile(outPutFileName, stringPage, "UTF-8", false);
@@ -99,12 +100,10 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 				logger.error("Problém při zápisu do souboru:"+nameFileTxt,e);
 				System.out.println("Problém při zápisu do souboru:"+nameFileTxt+", "+e.getLocalizedMessage());
 			}
-			
-			i++;
+			indexTxtFile++;
 		}
 	
 		System.out.println("....konec načítání");
-		*/
 		
 		
 		/* ------------------------------ */
