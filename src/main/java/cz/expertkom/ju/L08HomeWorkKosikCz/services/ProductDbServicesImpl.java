@@ -15,7 +15,7 @@ import cz.expertkom.ju.L08HomeWorkKosikCz.interfaces.ProductRepository;
 
 @Service
 public class ProductDbServicesImpl implements ProductDbServices {
-	
+
 	@Autowired
 	ProductRepository pRep;
 
@@ -34,6 +34,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		pDto.setName(p.getName());
 		pDto.setPrice(p.getPrice());
 		pDto.setProductId(p.getProductId());
+		pDto.setIterationStepProcessed(p.getIterationStepProcessed());
 		pDto.setInsertedTimeStamp(p.getInsertedTimeStamp());
 		pDto.setUpdatedTimeStamp(p.getUpdatedTimeStamp());
 		return pDto;
@@ -52,6 +53,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		pr.setName(pDto.getName());
 		pr.setPrice(pDto.getPrice());
 		pr.setProductId(pDto.getProductId());
+		pr.setIterationStepProcessed(1);
 		pr.setInsertedTimeStamp(LocalDateTime.now());
 		pRep.save(pr);
 	}
@@ -65,6 +67,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		pr = pRep.findOne(id);
 		pr.setName(pDto.getName());
 		pr.setPrice(pDto.getPrice());
+		pr.setIterationStepProcessed(1);
 		pr.setProductId(pDto.getProductId());
 		pr.setUpdatedTimeStamp(LocalDateTime.now());
 		pRep.save(pr);
@@ -84,4 +87,22 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		return prs;
 	}
 
+	public Products getProductsPerName(String nameProduct) {
+		List<Product> prsList = pRep.getProductsPerName(nameProduct);
+		Products prs = new Products();
+		prs.setProducts(prsList);
+		return prs;
+	}
+
+	public void setAllIterationStepsProcessedDown() {
+		pRep.setAllIterationStepsProccesedDown();
+	}
+
+	public int getCountNonProcessedProduct() {
+		return pRep.getCountNonProcessedProduct();
+	}
+	
+	public int getCountProcessedProduct() {
+		return pRep.getCountProcessedProduct();
+	}
 }
