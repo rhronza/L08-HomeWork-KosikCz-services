@@ -2,6 +2,7 @@ package cz.expertkom.ju.L08HomeWorkKosikCz.services;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,12 @@ public class ProductDbServicesImpl implements ProductDbServices {
 	
 	public ProductDto getOne2(Long id) {
 		Product p = pRep.findOne(id);
+		
 		ProductDto pDto = new ProductDto();
 		pDto.setId(p.getId());
 		pDto.setName(p.getName());
 		pDto.setPrice(p.getPrice());
+		pDto.setPriceAfterDiscount(p.getPriceAfterDiscount());
 		pDto.setProductId(p.getProductId());
 		pDto.setIterationStepProcessed(p.getIterationStepProcessed());
 		pDto.setInsertedTimeStamp(p.getInsertedTimeStamp());
@@ -52,9 +55,10 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		Product pr = new Product();
 		pr.setName(pDto.getName());
 		pr.setPrice(pDto.getPrice());
+		pr.setPriceAfterDiscount(pDto.getPriceAfterDiscount());
 		pr.setProductId(pDto.getProductId());
 		pr.setIterationStepProcessed(1);
-		pr.setInsertedTimeStamp(LocalDateTime.now());
+		pr.setInsertedTimeStamp(Calendar.getInstance());
 		pRep.save(pr);
 	}
 
@@ -67,6 +71,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		pr = pRep.findOne(id);
 		pr.setName(pDto.getName());
 		pr.setPrice(pDto.getPrice());
+		pr.setPriceAfterDiscount(pDto.getPriceAfterDiscount());;
 		pr.setIterationStepProcessed(1);
 		pr.setProductId(pDto.getProductId());
 		pr.setUpdatedTimeStamp(LocalDateTime.now());

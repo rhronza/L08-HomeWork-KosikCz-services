@@ -3,7 +3,10 @@ package cz.expertkom.ju.L08HomeWorkKosikCz.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -31,16 +34,31 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 	ProductDbServices pPrDb;
 	
 	/* rozlišovač pro Název */
-	final String distinctiveForName ="data-page-title="; 
-	int distinctiveForNameLength = distinctiveForName.length();
+	//final static String distinctiveForName ="data-page-title=\""; 
+	//final static int distinctiveForNameLength = distinctiveForName.length();
+	/*doplnit */final static String distinctiveForNameLeft = "                   data-page-title=\"";
+	final static int distinctiveForNameLeftLength=distinctiveForNameLeft.length();
+	/*doplnit */final static String distinctiveForNameRight = "\"";
 	
 	/* rozlišovač pro cenu */
-	String distinctiveForPrice ="data-product-price=";
-	int distinctiveForPriceLength = distinctiveForPrice.length();
+	//final static String distinctiveForPrice ="data-product-price=\"";
+	//final static int distinctiveForPriceLength = distinctiveForPrice.length();
+	/*doplnit */final static String distinctiveForPriceLeft = "                   data-product-price=\"";
+	final static int distinctiveForPriceLeftLength=distinctiveForPriceLeft.length();
+	/*doplnit */final static String distinctiveForPriceRight = "\"";
+
+	/* NOVÝ !!! - rozlišovač pro cenu po slevě */
+	/*doplnit */final static String distinctiveForPriceAfterDiscountLeft = "                <strong class=\"price\">";
+	final static int distinctiveForPriceAfterDiscountLeftLength=distinctiveForPriceAfterDiscountLeft.length();
+	/*doplnit */final static String distinctiveForPriceAfterDiscountRight = " Kč</strong>";
 	
-	/* rozlišovač pro Product ID */
-	String distinctiveForIdProduct ="data-product-id=";
-	int distinctiveForIdProductLength = distinctiveForIdProduct.length();
+	/* rozlišovač pro Product ID */   
+	//final static String distinctiveForIdProduct ="data-product-id=";
+	//final int distinctiveForIdProductLength = distinctiveForIdProduct.length();
+	/*doplnit */final static String distinctiveForIdProductLeft = "                   data-product-id=\"";
+	final static int distinctiveForIdProductLeftLength=distinctiveForIdProductLeft.length();
+	/*doplnit */final static String distinctiveForIdProductRight = "\"";
+
 	
 
 	private static final Logger logger =LogManager.getLogger(DownLoadPageServiceImpl.class);
@@ -54,6 +72,10 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 	private List<String> listWebPages = new ArrayList<String>();
 	
 	private String nameFileTxt ="";
+	
+
+	private static final String nameFindProducts = "txt/FindProducts.txt";
+	private static final File fileFindProducts = new File(nameFindProducts);
 	
 	//int i = 0;
 
@@ -78,9 +100,9 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 		
 		int indexTxtFile = 1;
 			
-		/* -------------------------------------------------- */
-		/* iterace seznamu s stahování stránek do txt souboru */
-		/* -------------------------------------------------- */
+		/* --------------------------------------------------------------------- */
+		/* stahování wep-pages do txt souboru podle seznamu stahovaných stránek  */
+		/* --------------------------------------------------------------------- */
 		
 		System.out.println("Start načítání....");
 		
@@ -92,7 +114,7 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 				logger.error("Problém při čtení ze stránky:"+uriSection,e1);
 				System.out.println("Problém při čtení ze stránky:"+uriSection+", "+e1.getLocalizedMessage());
 			}
-			nameFileTxt = String.format("%03d", indexTxtFile)+"_"+uriSection.replaceAll("https://www.kosik.cz/", "")+".txt";
+			nameFileTxt = String.format("txt/"+"%03d", indexTxtFile)+"_"+uriSection.replaceAll("https://www.kosik.cz/", "")+".txt";
 			File outPutFileName = new File(nameFileTxt);
 			try {
 				FileUtils.writeStringToFile(outPutFileName, stringPage, "UTF-8", false);
@@ -106,18 +128,19 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 		System.out.println("....konec načítání");
 		
 		
+		
 		/* ------------------------------ */
 		/* převod do databáze			  */
 		/* ------------------------------ */
-		parseTxtFile();
+		parseTxtFiles();
 	}
 	
 	
-	private void parseTxtFile() {
+	private void parseTxtFiles() {
 		
 		/* index textového souboru vzniklého stažením sekce z webové stránky */
 		int indexTxtFile =1;
-		/* počet zpracovanýých produktů - nalezených ve vstupním textovém souboru z webové stránky - včetně duplikovaných produktů */
+		/* počet zpracovaných produktů - nalezených ve vstupním textovém souboru z webové stránky - včetně duplikovaných produktů */
 		int countProcessedProducts = 0;
 		/* počet nově vložných produktů */
 		int countInsertedProducts = 0;
@@ -128,100 +151,139 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 		
 		System.out.println("Start převodu do databáze...");
 		
-		
 		/* shození příznaku zpracovaného produktu, nahazují se v insert a update services */ 
 		pPrDb.setAllIterationStepsProcessedDown();
 		
-		/* iterace webových staránek */
+		/* zapsání dateTime do souboru nalezených produktů */
+		Calendar dateNow = Calendar.getInstance();
+		DateFormat sdf = new SimpleDateFormat("d.MMMM.yyyy HH:mm:ss");
+		try {
+			FileUtils.writeStringToFile(fileFindProducts, "\n\n****************************************\n"+sdf.format(dateNow.getTime())+
+															"\n****************************************\n", 
+										"UTF-8", true);
+		} catch (IOException e1) {
+			logger.error("Problém při zápisu do souboru souboru:"+nameFindProducts,e1);
+			System.out.println("Problém při čtení ze souboru:"+nameFileTxt+", "+e1.getLocalizedMessage());
+			e1.printStackTrace();
+		}
+		
+		/* iterace seznamu webových stránek */
 		for (String uriSection: listWebPages) {
-			nameFileTxt = String.format("%03d", indexTxtFile)+"_"+uriSection.replaceAll("https://www.kosik.cz/", "")+".txt";
+			nameFileTxt = String.format("txt/"+"%03d", indexTxtFile)+"_"+uriSection.replaceAll("https://www.kosik.cz/", "")+".txt";
 			File inputFile = new File(nameFileTxt);
 			try {
 				
 				boolean nameFound = false;
 				boolean priceFound = false;
+				boolean priceAfterDiscountFound = false;
 				boolean productIdFound = false;
 				
 				String sname=""; 
 				String sprice="";
+				String spriceAfterDiscount="";
+				
 				String sproductid ="";
 				
 				
 				LineIterator it = FileUtils.lineIterator(inputFile, "UTF-8");
+				
 				/* iterace textového souboru s obsahem webové stránky  */
 				while(it.hasNext()) {
 					String rowOfFile = it.nextLine();
 					
-					/* nalezen Název produktu */
-					if (!nameFound && rowOfFile.contains(distinctiveForName)) {
+					/* nalezen Název product */
+					if (!nameFound && rowOfFile.contains(distinctiveForNameLeft) && rowOfFile.contains(distinctiveForNameRight) ) {
 						nameFound=true;
-						//sname = rowOfFile.substring(distinctiveForNameLength+1,rowOfFile.length()-1);
-						sname = rowOfFile.substring(rowOfFile.lastIndexOf(distinctiveForName)+distinctiveForNameLength+1,rowOfFile.length()-1);
-						//System.out.println("sname: "+sname);
+						//sname = rowOfFile.substring(rowOfFile.lastIndexOf(distinctiveForName)+distinctiveForNameLength,rowOfFile.length()-1);
+						sname = rowOfFile.substring(rowOfFile.indexOf(distinctiveForNameLeft)+distinctiveForNameLeft.length(),rowOfFile.lastIndexOf(distinctiveForNameRight));
 						pDto.setName(sname);
 						continue;
 					}
 					/* nalezena cena produktu */
-					if (!priceFound && rowOfFile.contains(distinctiveForPrice)) {
+					if (!priceFound && rowOfFile.contains(distinctiveForPriceLeft) && rowOfFile.contains(distinctiveForPriceRight)) {
 						priceFound=true;
-						sprice = rowOfFile.substring(rowOfFile.lastIndexOf(distinctiveForPrice)+distinctiveForPriceLength+1,rowOfFile.length()-1);
-						//System.out.println("sprice:"+sprice+".");
+						//sprice = rowOfFile.substring(rowOfFile.lastIndexOf(distinctiveForPrice)+distinctiveForPriceLength,rowOfFile.length()-1);
+						sprice = rowOfFile.substring(rowOfFile.indexOf(distinctiveForPriceLeft)+distinctiveForPriceLeft.length(),rowOfFile.lastIndexOf(distinctiveForPriceRight));
 						pDto.setPrice(Float.parseFloat(sprice));
 						continue;
 					}
-					/* nalezeno Id produktu */
-					if (! productIdFound && rowOfFile.contains(distinctiveForIdProduct)) {
+					/* nalezena cena produktu po slevě */
+					if (!priceAfterDiscountFound && rowOfFile.contains(distinctiveForPriceAfterDiscountLeft) && rowOfFile.contains(distinctiveForPriceAfterDiscountRight)) {
+						priceAfterDiscountFound=true;
+						//sprice = rowOfFile.substring(rowOfFile.lastIndexOf(distinctiveForPrice)+distinctiveForPriceLength,rowOfFile.length()-1);
+						//pDto.setPrice(Float.parseFloat(sprice));
+						spriceAfterDiscount = rowOfFile.substring(rowOfFile.indexOf(distinctiveForPriceAfterDiscountLeft)+distinctiveForPriceAfterDiscountLeft.length(),rowOfFile.lastIndexOf(distinctiveForPriceAfterDiscountRight));
+						spriceAfterDiscount = spriceAfterDiscount.replaceAll(",", ".");
+						spriceAfterDiscount=spriceAfterDiscount.replaceAll("\\s", "");
+						/* ještě doplnit do Entity, a EntityDto */
+						//System.out.println(pDto.getName()+" cena po slevě: "+Float.parseFloat(spriceAfterDiscount));
+						pDto.setPriceAfterDiscount(Float.parseFloat(spriceAfterDiscount));
+						continue;
+					}
+					
+					/* nalezeno productId produktu - cizí číslo produktu */
+					if (! productIdFound && rowOfFile.contains(distinctiveForIdProductLeft) && rowOfFile.contains(distinctiveForIdProductRight)) {
 						productIdFound=true;
-						sproductid= rowOfFile.substring(rowOfFile.lastIndexOf(distinctiveForIdProduct)+distinctiveForIdProductLength+1,rowOfFile.length()-1);
+						//sproductid= rowOfFile.substring(rowOfFile.lastIndexOf(distinctiveForIdProduct)+distinctiveForIdProductLength+1,rowOfFile.length()-1);
+						sproductid = rowOfFile.substring(rowOfFile.indexOf(distinctiveForIdProductLeft)+distinctiveForIdProductLeft.length(),rowOfFile.lastIndexOf(distinctiveForIdProductRight));
 						pDto.setProductId(sproductid);
 					}
 					
-					/* došlo k nalezení produktu, jeho ceny i productID */
-					if (nameFound && priceFound && productIdFound) {
+					/* došlo k nalezení produktu, jeho ceny, ceny po slevě i productID */
+					if (nameFound && priceFound && priceAfterDiscountFound && productIdFound) {
 
 						nameFound = false;
 						priceFound = false;
+						priceAfterDiscountFound = false;
 						productIdFound = false;
 					
 						countProcessedProducts++;
-						System.out.println("nalezen produkt: "+pDto.getName());
+						//System.out.println("nalezen produkt: "+pDto);
+						FileUtils.writeStringToFile(fileFindProducts, pDto.toString()+"\n", "UTF-8", true);
 						
-						/* načetní seznamu produktů z tabulky obsahujících zjištěný název */
+						/* načtení seznamu produktů z tabulky obsahujících zjištěný název */
 						prList = pPrDb.getProductsPerName(pDto.getName());
 						
 						/* seznam prázdný -> přidat produkt */
 						if (prList.getProducts().size() == 0) {
 							countInsertedProducts++;
 							pPrDb.insertProduct(pDto);
+							//System.out.println(pDto.toString());
 						}
 						
-						/* seznam obsahuje právě jeden nalezený produkt -> aktualizovat cenu */
+						/* seznam obsahuje právě jeden nalezený produkt -> AKTUALIZOVAT cenu */
 						if (prList.getProducts().size() == 1) {
 							/* jestliže nebyl touto iterací aktualizován ještě aktualizován */
 							if (prList.getProducts().get(0).getIterationStepProcessed()==0) {
 								pPrDb.updateProduct(prList.getProducts().get(0).getId(), pDto);
+								//System.out.println(pDto.toString());
 							} else /* již byl toutu iterací aktualizován */ 
 							{
 								countDuplicatedInputProducts++;
-								System.out.println("Zjištěn duplikovaný produkt ve vstupním souboru:");
-								System.out.println("  vstupní soubor  :"+pDto);
-								System.out.println("  tabulka databáze:"+prList);
+								FileUtils.writeStringToFile(fileFindProducts, "----------------------------------------------------------------------------------------\n"
+																				+ "Zjištěn duplikovaný produkt ve vstupním textovém souboru:"+"\n", "UTF-8", true);
+								FileUtils.writeStringToFile(fileFindProducts, "  vstupní soubor  :"+pDto.toString()+"\n", "UTF-8", true);
+								FileUtils.writeStringToFile(fileFindProducts, "  tabulka databáze:"+prList.toString()+"\n" , "UTF-8", true);
+								FileUtils.writeStringToFile(fileFindProducts, "----------------------------------------------------------------------------------------\n","UTF-8", true);
 							}
 							
 						}
-						/* v tabulce nalezeno více řádkůl se setejným názvem !!!! */
+						/* v tabulce nalezeno více řádků se stejným názvem !!!! */
 						if (prList.getProducts().size() > 1) {
 							countDuplicatedProducts++;
-							System.out.println("---------------------------------------------------------------------------------------------------------");
-							System.out.println("!!!!! Nalezen duplikovaný produkt: "+pDto);
-							System.out.println("             "+"v tabulce produktů jsou to řádky: ");
+							FileUtils.writeStringToFile(fileFindProducts, "-----------------------------------------------------------------------------------\n", "UTF-8", true);
+							FileUtils.writeStringToFile(fileFindProducts, "!!!!! Nalezen duplikovaný produkt v tabulce!!!! : "+pDto.toString()+"\n", "UTF-8", true);
+							FileUtils.writeStringToFile(fileFindProducts, "             "+"vstupní textový soubor:" +pDto.toString()+"\n", "UTF-8", true);
+							FileUtils.writeStringToFile(fileFindProducts, "             "+"tabulka produktů: "+"\n", "UTF-8", true);
 							for (Product pr: prList.getProducts()) {
-								System.out.println("             "+pr);
+								FileUtils.writeStringToFile(fileFindProducts, "             "+pr.toString()+"\n", "UTF-8", true);
 							}
-							System.out.println("---------------------------------------------------------------------------------------------------------");
+							FileUtils.writeStringToFile(fileFindProducts, "----------------------------------------------------------------------------------\n", "UTF-8", true);
+
 						}
 					} /* if (nameFound && priceFound && productIdFound) */
 				} /* </while>*/
+				
 			} catch (IOException e) {
 				logger.error("Problém při čtení ze souborudo souboru:"+nameFileTxt,e);
 				System.out.println("Problém při čtení ze souboru:"+nameFileTxt+", "+e.getLocalizedMessage());

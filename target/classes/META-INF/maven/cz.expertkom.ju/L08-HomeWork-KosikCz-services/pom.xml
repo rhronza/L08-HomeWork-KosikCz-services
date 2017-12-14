@@ -3,6 +3,10 @@
   <groupId>cz.expertkom.ju</groupId>
   <artifactId>L08-HomeWork-KosikCz-services</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  
+  <properties>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
   <dependencies>
   	
