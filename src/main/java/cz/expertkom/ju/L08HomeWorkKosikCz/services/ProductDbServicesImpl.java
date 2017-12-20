@@ -110,4 +110,8 @@ public class ProductDbServicesImpl implements ProductDbServices {
 	public int getCountProcessedProduct() {
 		return pRep.getCountProcessedProduct();
 	}
+
+	public long countProducts() {
+		return pRep.countProducts();
+	}
 }
