@@ -31,7 +31,7 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 	
 	@Autowired
 	ProductDbServices pPrDb;
-
+	
 	/* rozlišovač pro Název */
 	final static String distinctiveForNameLeft = "                   data-page-title=\"";
 	final static int distinctiveForNameLeftLength=distinctiveForNameLeft.length();
@@ -148,21 +148,40 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 	}
 	
 	public void start() {
-
+		
+		/* shození přepínače v databázi */
+		pPrDb.setAllIterationStepsProcessedDown();
+		
 		System.out.println();
 		System.out.println(nameJournal);
 		System.out.println("");
 		System.out.println();
 		
-		/* EXTRACTEd URI PŘIDÁVAT PŘÍMO DO listWebPages, duplikované  */
+		/* iterace listWebPages, nově extrahované se do něj přidávají*/
 		for (int idx = 0; idx < listWebPages.size(); idx ++) {
 			if (listWebPages.get(idx).getFileUriLink()==null) {
 				listWebPages.get(idx).setFileUriLink(createFileNameFormUrilink(idx));
 			}
-			System.out.println(listWebPages.get(idx).getFileUriLink().substring(4)+" (před zpracováním: "+listWebPages.size()+")");
-			downLoadPage(idx);
-			parseDownloadedPage(idx);
+			System.out.println(listWebPages.get(idx).getFileUriLink().substring(4)+" (URI před zpracováním: "+listWebPages.size()+")");
+			
+			/* zápis aktuálního Uri link do Journalu */
+			try {
+				FileUtils.writeStringToFile(journal, "\n"+listWebPages.get(idx).urilLink+"\n"+
+													"---------------------------------------------------\n", "UTF-8", true);
+			} catch (IOException e9) {
+				logger.error("(100)Problém při zápisu do souboru:"+nameJournal,e9);
+				System.out.println("(100)Problém při zápisu do souboru:"+nameJournal+", "+e9.getLocalizedMessage());
+				e9.printStackTrace();
+			}
+			
+			/* stažení stránky */
+			downLoadPageSaveToTxtFile(idx);
+			
+			/* parsuj stránky: extrakce urilink a parametrů vyrobků */
+			parseTxtFile(idx);
 		}
+		
+		
 		try {
 			System.out.println("\n Rekapitulace");
 			FileUtils.writeStringToFile(journal, "\n Rekapitulace\n", "UTF-8", true);
@@ -212,29 +231,29 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 				FileUtils.writeStringToFile(journal, wpgd.toString()+"\n", "UTF-8", true);
 			}
 		} catch (IOException e) {
-			logger.error("Problém při zápisu do souboru:"+nameJournal,e);
-			System.out.println("Problém při zápisu do souboru:"+nameJournal+", "+e.getLocalizedMessage());
+			logger.error("(101)Problém při zápisu do souboru:"+nameJournal,e);
+			System.out.println("(101)Problém při zápisu do souboru:"+nameJournal+", "+e.getLocalizedMessage());
 			e.printStackTrace();
 		} 
 	}
 	
-	private static void downLoadPage(int idx) {
+	private static void downLoadPageSaveToTxtFile(int idx) {
 		try {
 			stringPage = Unirest.get(listWebPages.get(idx).getUrilLink()).asString().getBody();
 		} catch (UnirestException e1) {
-			logger.error("Problém při čtení ze stránky:"+listWebPages.get(idx).getUrilLink(),e1);
-			System.out.println("Problém při čtení ze stránky:"+listWebPages.get(idx).getUrilLink()+", "+e1.getLocalizedMessage());
+			logger.error("(102)Problém při čtení ze stránky:"+listWebPages.get(idx).getUrilLink(),e1);
+			System.out.println("(102)Problém při čtení ze stránky:"+listWebPages.get(idx).getUrilLink()+", "+e1.getLocalizedMessage());
 		}
 		File outPutFileName = new File(listWebPages.get(idx).getFileUriLink());
 		try {
 			FileUtils.writeStringToFile(outPutFileName, stringPage, "UTF-8", false);
 		} catch (IOException e) {
-			logger.error("Problém při zápisu do souboru:"+listWebPages.get(idx).getFileUriLink(),e);
-			System.out.println("Problém při zápisu do souboru:"+listWebPages.get(idx).getFileUriLink()+", "+e.getLocalizedMessage());
+			logger.error("(103)Problém při zápisu do souboru:"+listWebPages.get(idx).getFileUriLink(),e);
+			System.out.println("(103)Problém při zápisu do souboru:"+listWebPages.get(idx).getFileUriLink()+", "+e.getLocalizedMessage());
 		}
 	}
 	
- 	private void parseDownloadedPage(int idx) {
+ 	private void parseTxtFile(int idx) {
 		File inputFile = new File(listWebPages.get(idx).fileUriLink);
 		
 		boolean nameFound = false;
@@ -378,8 +397,8 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 			it.close();
 			
 		} catch (IOException e) {
-			logger.error("Problém při zápisu do souboru:"+nameJournal,e);
-			System.out.println("Problém při zápisu do souboru:"+nameJournal+", "+e.getLocalizedMessage());
+			logger.error("(105)Problém při zápisu do souboru:"+nameJournal,e);
+			System.out.println("(105)Problém při zápisu do souboru:"+nameJournal+", "+e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 		

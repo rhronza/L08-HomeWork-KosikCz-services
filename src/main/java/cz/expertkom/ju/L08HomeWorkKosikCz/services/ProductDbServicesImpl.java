@@ -51,6 +51,13 @@ public class ProductDbServicesImpl implements ProductDbServices {
 	}
 
 
+	public Products getProductsPartText(String partText) {
+		List<Product> prs = pRep.findProductsPartName(partText);
+		Products products = new Products();
+		products.setProducts(prs);
+		return products;
+	}
+
 	public void insertProduct(ProductDto pDto) {
 		Product pr = new Product();
 		pr.setName(pDto.getName());
