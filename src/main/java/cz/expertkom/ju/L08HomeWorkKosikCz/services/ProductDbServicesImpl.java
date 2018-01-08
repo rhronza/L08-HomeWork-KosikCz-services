@@ -121,4 +121,5 @@ public class ProductDbServicesImpl implements ProductDbServices {
 	public long countProducts() {
 		return pRep.countProducts();
 	}
+
 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -72,10 +73,12 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 	
 	private static final String fixedPrefixWebPage = "https://www.kosik.cz";
 	
+	private static final String correctSequenceDeatil="1234";
+	
 	private static int countProcessedProducts = 0;
 	private static int countInsertedProducts = 0;
 	private static int countDuplicatedInputProducts = 0;
-	private static int countDuplicatedProducts = 0;
+	private static int countDuplicatedProducts = 0; // v tabulce - narušená konzistance
 	
 	
 	/*
@@ -131,7 +134,10 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 
 	@PostConstruct 
 	public void initListWebPages() {
+		// listWebPages.add(new WebPage("https://www.kupi.cz/sleva/pivo-svetle-vycepni-original-10-gambrinus","txt/0001_kupicz.txt"));
+		
 		listWebPages.add(new WebPage("https://www.kosik.cz",null));
+		/*
 		listWebPages.add(new WebPage("https://www.kosik.cz/mlecne-a-chlazene",null));
 		listWebPages.add(new WebPage("https://www.kosik.cz/maso-a-ryby",null));
 		listWebPages.add(new WebPage("https://www.kosik.cz/ovoce-a-zelenina",null));
@@ -145,6 +151,8 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 		listWebPages.add(new WebPage("https://www.kosik.cz/domacnost-a-zahrada",null));
 		listWebPages.add(new WebPage("https://www.kosik.cz/drogerie",null));
 		listWebPages.add(new WebPage("https://www.kosik.cz/trafika",null));
+		*/
+	
 	}
 	
 	public void start() {
@@ -166,8 +174,8 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 			
 			/* zápis aktuálního Uri link do Journalu */
 			try {
-				FileUtils.writeStringToFile(journal, "\n"+listWebPages.get(idx).urilLink+"\n"+
-													"---------------------------------------------------\n", "UTF-8", true);
+				FileUtils.writeStringToFile(journal, "\n"+listWebPages.get(idx).fileUriLink+", "+listWebPages.get(idx).urilLink+"\n"+
+													String.join("", Collections.nCopies(140, "-"))+"-\n", "UTF-8", true);
 			} catch (IOException e9) {
 				logger.error("(100)Problém při zápisu do souboru:"+nameJournal,e9);
 				System.out.println("(100)Problém při zápisu do souboru:"+nameJournal+", "+e9.getLocalizedMessage());
@@ -179,6 +187,12 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 			
 			/* parsuj stránky: extrakce urilink a parametrů vyrobků */
 			parseTxtFile(idx);
+			
+			/*
+			if (((idx +1) % 20 )== 0) {
+				break;
+			}
+			*/
 		}
 		
 		
@@ -189,47 +203,55 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 			System.out.println("------------");
 			FileUtils.writeStringToFile(journal, "------------\n", "UTF-8", true);
 			
-			System.out.println("počet stažených prouktů : "+countProcessedProducts);
-			FileUtils.writeStringToFile(journal, "počet stažených prouktů : "+countProcessedProducts+"\n", "UTF-8", true);
+			System.out.println("počet stažených produktů : "+countProcessedProducts);
+			FileUtils.writeStringToFile(journal, "počet stažených produktů : "+countProcessedProducts+"\n", "UTF-8", true);
 			
-			System.out.println(" z toho duplikovaných   : "+countDuplicatedInputProducts);
-			FileUtils.writeStringToFile(journal, " z toho duplikovaných   : "+countDuplicatedInputProducts+"\n", "UTF-8", true);
+			System.out.println("    z toho duplikovaných : "+countDuplicatedInputProducts);
+			FileUtils.writeStringToFile(journal, "    z toho duplikovaných : "+countDuplicatedInputProducts+"\n", "UTF-8", true);
 			
 			System.out.println("počet přidaných produktů do tabulky : "+countInsertedProducts);
 			FileUtils.writeStringToFile(journal, "počet přidaných produktů do tabulky : "+countInsertedProducts+"\n", "UTF-8", true);
-	
-			System.out.println("počet aktualizovaných produktů : "+pPrDb.getCountProcessedProduct());
-			FileUtils.writeStringToFile(journal, "počet aktualizovaných produktů : "+pPrDb.getCountProcessedProduct()+"\n", "UTF-8", true);
-	
-			System.out.println("počet neaktualizovaných produktů    : "+pPrDb.getCountNonProcessedProduct());
-			FileUtils.writeStringToFile(journal, "počet neaktualizovaných produktů    : "+pPrDb.getCountNonProcessedProduct()+"\n", "UTF-8", true);
-	
-			System.out.println("počet v tabulce duplikovaných produktů (narušená konzistence): "+countDuplicatedProducts);
-			FileUtils.writeStringToFile(journal, "počet v tabulce duplikovaných produktů (narušená konzistence): "+countDuplicatedProducts+"\n", "UTF-8", true);
-	
-			System.out.println("počet produktů v tabulce celkem : "+pPrDb.countProducts());
-			FileUtils.writeStringToFile(journal, "počet produktů v tabulce celkem : "+pPrDb.countProducts()+"\n", "UTF-8", true);
 			
+			System.out.println("\nPočet produktů v tabulce celkem : "+pPrDb.countProducts());
+			FileUtils.writeStringToFile(journal, "\nPočet produktů v tabulce celkem : "+pPrDb.countProducts()+"\n", "UTF-8", true);
+	
+			System.out.println("   zpracovaných (přidaných a aktualizovaných): "+pPrDb.getCountProcessedProduct());
+			FileUtils.writeStringToFile(journal, "   zpracovaných (přidaných a aktualizovaných): "+pPrDb.getCountProcessedProduct()+"\n", "UTF-8", true);
+	
+			System.out.println("                               nezpracovaných: "+pPrDb.getCountNonProcessedProduct());
+			FileUtils.writeStringToFile(journal, "                               nezpracovaných: "+pPrDb.getCountNonProcessedProduct()+"\n", "UTF-8", true);
+	
+			System.out.println("\npočet v tabulce duplikovaných produktů (narušená konzistence): "+countDuplicatedProducts);
+			FileUtils.writeStringToFile(journal, "\npočet v tabulce duplikovaných produktů (narušená konzistence): "+countDuplicatedProducts+"\n", "UTF-8", true);
+	
+			
+			/*			
 			System.out.println("počet URI basic: "+listWebPages.size());
 			FileUtils.writeStringToFile(journal, "počet URI basic: "+listWebPages.size()+"\n", "UTF-8", true);
+			*/
 			
-			System.out.println("počet URI extracted celkem: "+(listWebPages.size()+listWebPagesExtractedDuplicated.size()));
-			FileUtils.writeStringToFile(journal, "počet URI extracted celkem: "+(listWebPages.size()+listWebPagesExtractedDuplicated.size())+"\n", "UTF-8", true);
+			System.out.println("\npočet URI nalezených celkem: "+(listWebPages.size()+listWebPagesExtractedDuplicated.size()));
+			FileUtils.writeStringToFile(journal, "\npočet URI nalezených celkem: "+(listWebPages.size()+listWebPagesExtractedDuplicated.size())+"\n", "UTF-8", true);
 			
-			System.out.println("                    unique: "+listWebPages.size());
-			FileUtils.writeStringToFile(journal, "                    unique: "+listWebPages.size()+"\n", "UTF-8", true);
+			System.out.println("       počet unikátních URI: "+listWebPages.size());
+			FileUtils.writeStringToFile(journal, "       počet unikátních URI: "+listWebPages.size()+"\n", "UTF-8", true);
 			
-			System.out.println("                duplicated: "+listWebPagesExtractedDuplicated.size());
-			FileUtils.writeStringToFile(journal, "                duplicated: "+listWebPagesExtractedDuplicated.size()+"\n", "UTF-8", true);
+			System.out.println("     počet duplicitních URI: "+listWebPagesExtractedDuplicated.size());
+			FileUtils.writeStringToFile(journal, "     počet duplicitních URI: "+listWebPagesExtractedDuplicated.size()+"\n", "UTF-8", true);
 			
+	
 			FileUtils.writeStringToFile(journal, "\n\nExtracted URI\n----------------------\n", "UTF-8", true);
 			for (WebPage wpg : listWebPages) {
 				FileUtils.writeStringToFile(journal, wpg.toString()+"\n", "UTF-8", true);
 			}
+			
+			/*
 			FileUtils.writeStringToFile(journal, "\n\nExtracted URI duplicated\n---------------------------------------\n", "UTF-8", true);
 			for (WebPage wpgd : listWebPagesExtractedDuplicated) {
 				FileUtils.writeStringToFile(journal, wpgd.toString()+"\n", "UTF-8", true);
 			}
+			*/
+			
 		} catch (IOException e) {
 			logger.error("(101)Problém při zápisu do souboru:"+nameJournal,e);
 			System.out.println("(101)Problém při zápisu do souboru:"+nameJournal+", "+e.getLocalizedMessage());
@@ -256,6 +278,8 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
  	private void parseTxtFile(int idx) {
 		File inputFile = new File(listWebPages.get(idx).fileUriLink);
 		
+		String sequenceDetail = "";
+		
 		boolean nameFound = false;
 		boolean priceFound = false;
 		boolean priceAfterDiscountFound = false;
@@ -274,6 +298,7 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 
 			/* iterace textového souboru s obsahem webové stránky  */
 			while(it.hasNext()) {
+
 				/* načtení řádku textového souboru */
 				String rowOfFile = it.nextLine();	
 				
@@ -304,6 +329,7 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 				rightPosition = rowOfFile.indexOf(distinctiveForNameRight);
 				if (!nameFound && leftPosition>-1 && leftPosition < rightPosition) {
 					nameFound=true;
+					sequenceDetail=sequenceDetail + "3";
 					sname = rowOfFile.substring(leftPosition+distinctiveForNameLeftLength);
 					rightPosition = sname.indexOf(distinctiveForNameRight);
 					sname = sname.substring(0, rightPosition);
@@ -314,6 +340,7 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 				/* nalezena cena produktu */
 				if (!priceFound && rowOfFile.contains(distinctiveForPriceLeft) && rowOfFile.contains(distinctiveForPriceRight)) {
 					priceFound=true;
+					sequenceDetail=sequenceDetail + "2";
 					sprice = rowOfFile.substring(rowOfFile.indexOf(distinctiveForPriceLeft)+distinctiveForPriceLeft.length(),rowOfFile.lastIndexOf(distinctiveForPriceRight));
 					pDto.setPrice(Float.parseFloat(sprice));
 					continue;
@@ -321,6 +348,7 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 				/* nalezena cena produktu po slevě */
 				if (!priceAfterDiscountFound && rowOfFile.contains(distinctiveForPriceAfterDiscountLeft) && rowOfFile.contains(distinctiveForPriceAfterDiscountRight)) {
 					priceAfterDiscountFound=true;
+					sequenceDetail=sequenceDetail + "4";
 					spriceAfterDiscount = rowOfFile.substring(rowOfFile.indexOf(distinctiveForPriceAfterDiscountLeft)+distinctiveForPriceAfterDiscountLeft.length(),rowOfFile.lastIndexOf(distinctiveForPriceAfterDiscountRight));
 					spriceAfterDiscount = spriceAfterDiscount.replaceAll(",", ".");
 					spriceAfterDiscount=spriceAfterDiscount.replaceAll("\\s", "");
@@ -332,6 +360,7 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 				/* nalezeno productId produktu - cizí číslo produktu */
 				if (! productIdFound && rowOfFile.contains(distinctiveForIdProductLeft) && rowOfFile.contains(distinctiveForIdProductRight)) {
 					productIdFound=true;
+					sequenceDetail=sequenceDetail + "1";
 					sproductid = rowOfFile.substring(rowOfFile.indexOf(distinctiveForIdProductLeft)+distinctiveForIdProductLeft.length(),rowOfFile.lastIndexOf(distinctiveForIdProductRight));
 					pDto.setProductId(sproductid);
 				}
@@ -348,7 +377,10 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 					countProcessedProducts++;
 					
 					/* zapis nalezeného produktu do Journalu*/
-					FileUtils.writeStringToFile(journal, pDto.toString()+"\n", "UTF-8", true);
+					if (!correctSequenceDeatil.equals(sequenceDetail)){
+						FileUtils.writeStringToFile(journal, "NESHODUJE SE sequence detail!!! \n", "UTF-8", true);
+					}
+					FileUtils.writeStringToFile(journal, sequenceDetail+" "+ pDto.toString()+"\n", "UTF-8", true);
 					
 					/* načtení seznamu produktů z tabulky obsahujících zjištěný název */
 					prList = pPrDb.getProductsPerName(pDto.getName());
@@ -361,29 +393,27 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 					
 					/* seznam obsahuje právě jeden nalezený produkt -> AKTUALIZOVAT cenu */
 					if (prList.getProducts().size() == 1) {
-						/* jestliže nebyl touto iterací aktualizován ještě aktualizován */
+						/* jestliže nebyl touto iterací dosud aktualizován: */
 						if (prList.getProducts().get(0).getIterationStepProcessed()==0) {
 							pPrDb.updateProduct(prList.getProducts().get(0).getId(), pDto);
-							//System.out.println(pDto.toString());
-						} else /* již byl toutu iterací aktualizován */ 
+						} else /* již byl toutu iterací aktualizován: */ 
 						{
 							countDuplicatedInputProducts++;
 							FileUtils.writeStringToFile(journal, "----------------------------------------------------------------------------------------\n"
 																			+ "Zjištěn duplikovaný produkt ve vstupním textovém souboru:"+"\n", "UTF-8", true);
 							FileUtils.writeStringToFile(journal, (pDto.getProductId().equals(prList.getProducts().get(0).getProductId()))?"ProductID se shoduje":"ProductID se NESHODUJE !!!!", "UTF-8", true);
 							FileUtils.writeStringToFile(journal, ((pDto.getPriceAfterDiscount()==prList.getProducts().get(0).getPriceAfterDiscount())?", Cena se shoduje":", Cena se NESHODUJE !!!!")+"\n", "UTF-8", true);
-							FileUtils.writeStringToFile(journal, "  vstupní soubor  :"+pDto.toString()+"\n", "UTF-8", true);
+							FileUtils.writeStringToFile(journal, "  vstupní soubor  : "+sequenceDetail+" "+pDto.toString()+"\n", "UTF-8", true);
 							FileUtils.writeStringToFile(journal, "  tabulka databáze:"+prList.toString()+"\n" , "UTF-8", true);
 							FileUtils.writeStringToFile(journal, "----------------------------------------------------------------------------------------\n","UTF-8", true);
 						}
-						
 					}
-					/* v tabulce nalezeno více řádků se stejným názvem !!!! */
+					/* v tabulce nalezeno více řádků se stejným názvem !!!!: */
 					if (prList.getProducts().size() > 1) {
 						countDuplicatedProducts++;
 						FileUtils.writeStringToFile(journal, "-----------------------------------------------------------------------------------\n", "UTF-8", true);
 						FileUtils.writeStringToFile(journal, "!!!!! Nalezen duplikovaný produkt v tabulce!!!! : "+pDto.toString()+"\n", "UTF-8", true);
-						FileUtils.writeStringToFile(journal, "             "+"vstupní textový soubor:" +pDto.toString()+"\n", "UTF-8", true);
+						FileUtils.writeStringToFile(journal, "             "+"vstupní textový soubor: " +sequenceDetail+" "+pDto.toString()+"\n", "UTF-8", true);
 						FileUtils.writeStringToFile(journal, "             "+"tabulka produktů: "+"\n", "UTF-8", true);
 						for (Product pr: prList.getProducts()) {
 							FileUtils.writeStringToFile(journal, "             "+pr.toString()+"\n", "UTF-8", true);
@@ -391,6 +421,8 @@ public class DownLoadPageServiceImpl implements DownLoadPageService {
 						FileUtils.writeStringToFile(journal, "----------------------------------------------------------------------------------\n", "UTF-8", true);
 
 					}
+					sequenceDetail="";
+					
 				} /* <if/ (nameFound && priceFound && productIdFound) */
 				
 			} /* </while>*/
