@@ -38,6 +38,7 @@ public class TestJsoup {
 		htmlAdresa="https://www.kosik.cz/produkt/19894-coca-cola-sklo-24-x-200ml";
 		htmlAdresa="https://www.kosik.cz/produkt/47689-fixaplast-naplast-classic-textilni-8cm-x-1-m-sleva-dmt-30-12-2020-poskozeny-obal";
 		htmlAdresa="https://www.kosik.cz/produkt/51560-koldokol-malina-sirup-sklo-0-33l";
+		htmlAdresa="https://www.kosik.cz/produkt/3544-bona-vita-jenikuv-lup-cerealni-polstarky-s-cokoladovou-prichuti-250g";
 		
 		
 		Document doc = Jsoup.connect(htmlAdresa).get();
