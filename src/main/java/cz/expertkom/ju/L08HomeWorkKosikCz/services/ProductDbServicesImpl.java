@@ -1,5 +1,10 @@
 package cz.expertkom.ju.L08HomeWorkKosikCz.services;
 
+/** 
+ * beana pro ukládání dat do databáze
+ *  
+ * **/
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;

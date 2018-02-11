@@ -4,7 +4,6 @@
 
 package cz.expertkom.ju.L08HomeWorkKosikCz.services;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -13,19 +12,20 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 
-	private static final Logger logger = LogManager.getLogger(PullWebpageParseJsoup.class);
+	// private static final Logger logger =
+	// LogManager.getLogger(PullWebpageParseJsoup.class);
 
 	private static List<WebPage> listWebPages = new ArrayList<WebPage>();
 	private static List<WebPage> listUriDetailProducts = new ArrayList<WebPage>();
@@ -36,15 +36,15 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 
 	/* vytvoření Journalu */
 	private static DateFormat sdfFile = new SimpleDateFormat("yyyy-MM-dd-HH'hod'-mm'min'-ss'sec'");
-	private static String nameJournal = "txt/Journal " + sdfFile.format(new Date()) + ".txt";
-	private static File journal = new File(nameJournal);
+//	private static String nameJournal = "txt/Journal " + sdfFile.format(new Date()) + ".txt";
+	// private static File journal = new File(nameJournal);
 
 	/* vytvoření Error.logu */
-	private static File errorLog = new File("txt/Error-log.txt");
-
-	private static File categoriesUriFile = new File("txt/_URI-Categories.txt");
-
-	private static File productsUriFile = new File("txt/_URI-Products.txt");
+	// private static File errorLog = new File("txt/Error-log.txt");
+	//
+	// private static File categoriesUriFile = new File("txt/_URI-Categories.txt");
+	//
+	// private static File productsUriFile = new File("txt/_URI-Products.txt");
 
 	public class WebPage {
 		private String urilLink;
@@ -135,9 +135,7 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 
 		@Override
 		public String toString() {
-			return "ProductFinded [nazev=" + nazev + ", cena=" + cena + ", cenaZajednotkuBaleni=" + cenaZajednotkuBaleni
-					+ ", jednotkaBaleni=" + jednotkaBaleni + ", vyprodano=" + vyprodano + ", velikostBaleni="
-					+ velikostBaleni + "]";
+			return "ProductFinded [nazev=" + nazev + ", cena=" + cena + ", cenaZajednotkuBaleni=" + cenaZajednotkuBaleni + ", jednotkaBaleni=" + jednotkaBaleni + ", vyprodano=" + vyprodano + ", velikostBaleni=" + velikostBaleni + "]";
 		}
 
 	}
@@ -150,12 +148,14 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 		/* shození přepínače v databázi */
 		// pPrDb.setAllIterationStepsProcessedDown();
 
-		System.out.println("\n" + nameJournal + "\n\n");
+		// System.out.println("\n" + nameJournal + "\n\n");
 
 		/* zápis jména žurnálu do error logu */
-		FileUtils.writeStringToFile(errorLog, nameJournal + "\n", "UTF-8", false);
-		FileUtils.writeStringToFile(categoriesUriFile, nameJournal + "\n", "UTF-8", false);
-		FileUtils.writeStringToFile(productsUriFile, nameJournal + "\n", "UTF-8", false);
+		// FileUtils.writeStringToFile(errorLog, nameJournal + "\n", "UTF-8", false);
+		// FileUtils.writeStringToFile(categoriesUriFile, nameJournal + "\n", "UTF-8",
+		// false);
+		// FileUtils.writeStringToFile(productsUriFile, nameJournal + "\n", "UTF-8",
+		// false);
 
 		/* iterace listWebPages, nově extrahované URI se do něj přidávají */
 		int idxListDetailProducts = 0;
@@ -164,21 +164,13 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 
 			/* vytvoří název souboru k URI */
 			if (listWebPages.get(idxListWebPages).getFileUriLink() == null) {
-				listWebPages.get(idxListWebPages).setFileUriLink(createFileNameFormUrilink(
-						listWebPages.get(idxListWebPages).getUrilLink(), "wp", idxListWebPages));
+				listWebPages.get(idxListWebPages).setFileUriLink(createFileNameFormUrilink(listWebPages.get(idxListWebPages).getUrilLink(), "wp", idxListWebPages));
 			}
 			/* vypíše na konzoli */
-			System.out.println("\n" + idxListWebPages + ":"
-					+ listWebPages.get(idxListWebPages).getFileUriLink().substring(4) + ", "
-					+ listWebPages.get(idxListWebPages).getUrilLink() + " (URI před zpracováním: " + listWebPages.size()
+			log.info("\n" + idxListWebPages + ":" + listWebPages.get(idxListWebPages).getFileUriLink().substring(4) + ", " + listWebPages.get(idxListWebPages).getUrilLink() + " (URI před zpracováním: " + listWebPages.size()
 					+ ", produktů před zpracováním: " + listUriDetailProducts.size() + ")");
 
-			/* zapíše aktuální Uri link a jméno souboru do Journalu */
-			FileUtils.writeStringToFile(journal,
-					"\nWeb Page:" + listWebPages.get(idxListWebPages).urilLink + ", "
-							+ listWebPages.get(idxListWebPages).fileUriLink + "\n"
-							+ String.join("", Collections.nCopies(140, "-")) + "-\n",
-					"UTF-8", true);
+			log.info("\nWeb Page:" + listWebPages.get(idxListWebPages).urilLink + ", " + listWebPages.get(idxListWebPages).fileUriLink + "\n" + String.join("", Collections.nCopies(140, "-")) + "-\n");
 
 			/*
 			 * stáhne stránku, vytěží URI jiných stránek (přidá do listWebPages) a URI na
@@ -192,8 +184,10 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 				 * iteruje listUridetailproducts, stahne detail produktu a vytěží požadované
 				 * údaje a listDetailProducts nakonec vymaže ?
 				 */
-				//parseWebPageFromListDetailproducts(idxListDetailProducts);
+				// parseWebPageFromListDetailproducts(idxListDetailProducts);
+
 				idxListDetailProducts++;
+
 			} /* end while */
 
 		} /* endfor */
@@ -218,7 +212,7 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 				String uriDetailproduct = uriDetailProduct.absUrl("data-page-path");
 				if (!uriDetailproduct.toString().isEmpty() && (!existUriLinkInUriDetailProducts(uriDetailproduct))) {
 					listUriDetailProducts.add(new WebPage(uriDetailproduct, null));
-					FileUtils.writeStringToFile(productsUriFile, idx + ": " + uriDetailproduct + "\n", "UTF-8", true);
+					log.info(idx + ": " + uriDetailproduct + "\n");
 				}
 			}
 
@@ -233,27 +227,16 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 					String uriWebPage = uriOdkaz.absUrl("href");
 					if (!uriWebPage.toString().isEmpty() && (!existUriLinkInListWebPages(uriWebPage))) {
 						listWebPages.add(new WebPage(uriWebPage, null));
-						FileUtils.writeStringToFile(categoriesUriFile, uriWebPage + "\n", "UTF-8", true);
+						log.info(uriWebPage + "\n");
 
 					}
 				}
 			}
 
-			File outPutFileName = new File(listWebPages.get(idx).getFileUriLink());
-			try {
-				FileUtils.writeStringToFile(outPutFileName, doc.toString(), "UTF-8", false);
-			} catch (IOException e) {
-				logger.error("(103)Problém při zápisu do souboru:" + listWebPages.get(idx).getFileUriLink(), e);
-				System.out.println("(103)Problém při zápisu do souboru:" + listWebPages.get(idx).getFileUriLink() + ", "
-						+ e.getLocalizedMessage());
-			}
+			// File outPutFileName = new File(listWebPages.get(idx).getFileUriLink());
+			log.info(doc.toString());
 		} catch (IOException e1) {
-			try {
-				FileUtils.writeStringToFile(errorLog,
-						idx + ":" + "     " + "Problém snačtením web.stránky:" + htmlAddres + "\n", "UTF-8", true);
-			} catch (IOException e111) {
-				System.out.println("(222)Problém při zápisu do chybového logu:" + e111.getLocalizedMessage());
-			}
+			log.error(idx + ":" + "     " + "Problém snačtením web.stránky:" + htmlAddres + "\n");
 			e1.printStackTrace();
 		}
 
@@ -268,58 +251,40 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 		// System.out.println("M1");
 		try {
 			Document doc = Jsoup.connect(listUriDetailProducts.get(idx).getUrilLink()).get();
-			// System.out.println("M2");
-			// System.out.println("Produkt:"+doc.title());
-			FileUtils.writeStringToFile(journal, "A", "UTF-8", true);
+			log.info("A");
 
 			Element nazevZjisteny = doc.select("div [class=block block-title]>h1").first();
 			nazev = nazevZjisteny.text().toString();
-			FileUtils.writeStringToFile(journal, "B", "UTF-8", true);
+			log.info("B");
 
 			Element cenaZjistena = doc.select("p[class=product-detail-pricing]>strong[class=price]").first();
 			cena = Float.parseFloat(cenaZjistena.text().toString().replaceAll("[Kč' ']", "").replaceAll(",", "."));
-			FileUtils.writeStringToFile(journal, "C", "UTF-8", true);
+			log.info("C");
 
 			Element cenaZajednotkuBaleniZjistena = doc.select("p[class=product-detail-pricing]>small>strong").first();
 			cenaZajednotkuBaleni = cenaZajednotkuBaleniZjistena.text().toString().replaceAll("[()]", "");
-			FileUtils.writeStringToFile(journal, "D", "UTF-8", true);
+			log.info("D");
 
 			Element vyprodanoElement = doc.select("p[class=selled-out]").first();
-			FileUtils.writeStringToFile(journal, "E", "UTF-8", true);
+			log.info("E");
 			if (vyprodanoElement != null) {
 				vyprodano = true;
 			}
-			FileUtils.writeStringToFile(journal, "F", "UTF-8", true);
+			log.info("F");
 			jednotkaBaleni = cenaZajednotkuBaleni.substring(cenaZajednotkuBaleni.lastIndexOf("/") + 1).trim();
-			FileUtils.writeStringToFile(journal, "G", "UTF-8", true);
-			System.out.println("     " + idx + ": Název:" + nazev + ", Cena:" + Float.toString(cena)
-					+ ", Cena za jednotku:" + cenaZajednotkuBaleni + ", Jednotka balení:" + jednotkaBaleni
-					+ ((vyprodano) ? ", VYPRODÁNO !!!" : ""));
-			FileUtils.writeStringToFile(journal, "H", "UTF-8", true);
-			FileUtils.writeStringToFile(journal,
-					"     " + idx + ": Název:" + nazev + ", Cena:" + Float.toString(cena) + ", (Cena za jednotku:"
-							+ cenaZajednotkuBaleni + "), Jednotka balení:" + jednotkaBaleni
-							+ ((vyprodano) ? ", VYPRODÁNO !!!" : "") + "\n",
-					"UTF-8", true);
-			FileUtils.writeStringToFile(journal, "I", "UTF-8", true);
+			log.info("G");
+			log.info(idx + ": Název:" + nazev + ", Cena:" + Float.toString(cena) + ", Cena za jednotku:" + cenaZajednotkuBaleni + ", Jednotka balení:" + jednotkaBaleni + ((vyprodano) ? ", VYPRODÁNO !!!" : ""));
+			log.info("H");
+			log.info(idx + ": Název:" + nazev + ", Cena:" + Float.toString(cena) + ", (Cena za jednotku:" + cenaZajednotkuBaleni + "), Jednotka balení:" + jednotkaBaleni + ((vyprodano) ? ", VYPRODÁNO !!!" : ""));
+			log.info("I");
 
 		} catch (IOException e) {
-			try {
-				FileUtils.writeStringToFile(errorLog,
-						"     " + "     " + "Problém se stažením detailu produktu: "
-								+ listUriDetailProducts.get(idx).getUrilLink() + ", "
-								+ listUriDetailProducts.get(idx).getFileUriLink() + "\n",
-						"UTF-8", true);
-			} catch (IOException e112) {
-				System.out.println("(223)Problém při zápisu do chybového logu:" + e112.getLocalizedMessage());
-			}
+			log.error("Problém se stažením detailu produktu: " + listUriDetailProducts.get(idx).getUrilLink() + ", " + listUriDetailProducts.get(idx).getFileUriLink() + "\n");
 		}
-
 	}
 
 	private static String createFileNameFormUrilink(String uriString, String prefix, int index) {
-		return String.format("txt/" + prefix + "%05d", index + 1) + "_"
-				+ uriString.replaceAll("https://www.kosik.cz", "").replaceAll("[/?=]", "_") + ".html";
+		return String.format("txt/" + prefix + "%05d", index + 1) + "_" + uriString.replaceAll("https://www.kosik.cz", "").replaceAll("[/?=]", "_") + ".html";
 	}
 
 	public static boolean existUriLinkInListWebPages(String uriLink) {
@@ -345,41 +310,15 @@ public class PullWebpageParseJsoup /* implements DownLoadPageService */ {
 	}
 
 	private void rekapitulace() {
-		try {
-			System.out.println("\n Rekapitulace");
-			FileUtils.writeStringToFile(journal, "\n Rekapitulace\n", "UTF-8", true);
-
-			System.out.println("------------");
-			FileUtils.writeStringToFile(journal, "------------\n", "UTF-8", true);
-
-			/*
-			 * System.out.println("počet URI basic: "+listWebPages.size());
-			 * FileUtils.writeStringToFile(journal,
-			 * "počet URI basic: "+listWebPages.size()+"\n", "UTF-8", true);
-			 */
-
-			System.out.println(
-					"\npočet URI nalezených celkem: " + (listWebPages.size() + listWebPagesExtractedDuplicated.size()));
-			FileUtils.writeStringToFile(journal, "\npočet URI nalezených celkem: "
-					+ (listWebPages.size() + listWebPagesExtractedDuplicated.size()) + "\n", "UTF-8", true);
-
-			System.out.println("       počet unikátních URI: " + listWebPages.size());
-			FileUtils.writeStringToFile(journal, "       počet unikátních URI: " + listWebPages.size() + "\n", "UTF-8",
-					true);
-
-			System.out.println("     počet duplicitních URI: " + listWebPagesExtractedDuplicated.size());
-			FileUtils.writeStringToFile(journal,
-					"     počet duplicitních URI: " + listWebPagesExtractedDuplicated.size() + "\n", "UTF-8", true);
-
-			FileUtils.writeStringToFile(journal, "\n\nExtracted URI\n----------------------\n", "UTF-8", true);
-			for (WebPage wpg : listWebPages) {
-				FileUtils.writeStringToFile(journal, wpg.toString() + "\n", "UTF-8", true);
-			}
-
-		} catch (IOException e) {
-			logger.error("(101)Problém při zápisu do souboru:" + nameJournal, e);
-			System.out.println("(101)Problém při zápisu do souboru:" + nameJournal + ", " + e.getLocalizedMessage());
-			e.printStackTrace();
+		System.out.println("\n Rekapitulace");
+		log.info("\n Rekapitulace\n");
+		log.info("------------\n");
+		log.info("\npočet URI nalezených celkem: " + (listWebPages.size() + listWebPagesExtractedDuplicated.size()));
+		log.info("       počet unikátních URI: " + listWebPages.size());
+		log.info("     počet duplicitních URI: " + listWebPagesExtractedDuplicated.size());
+		log.info("\n\nExtracted URI\n----------------------\n");
+		for (WebPage wpg : listWebPages) {
+			log.info(wpg.toString() + "\n");
 		}
 	}
 
