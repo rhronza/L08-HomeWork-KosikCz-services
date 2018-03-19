@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,25 @@ public class ProductDbServicesImpl implements ProductDbServices {
 	@Autowired
 	ProductRepository pRep;
 
+	/**
+	 * *************************************************************************************
+	 ** test jak se chová privátní list v beaně do kterého přistupují různé jiné
+	// beany
+	 */
+	@Autowired
+	SharingListBetweenBeans sharingListBetweenBeans;
+
+	@PostConstruct
+	private void addPeople() {
+		sharingListBetweenBeans.addPeople("Roman", 96.5F);
+		sharingListBetweenBeans.addPeople("Miloš", 184.5F);
+		sharingListBetweenBeans.addPeople("Ladislav", 66.25F);
+	}
+
+	/**
+	 * *************************************************************************************
+	 **/
+
 	public Products getOne(Long id) {
 		Products p = new Products();
 		List<Product> pl = new ArrayList<Product>();
@@ -32,10 +53,10 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		p.setProducts(pl);
 		return p;
 	}
-	
+
 	public ProductDto getOne2(Long id) {
 		Product p = pRep.findOne(id);
-		
+
 		ProductDto pDto = new ProductDto();
 		pDto.setId(p.getId());
 		pDto.setName(p.getName());
@@ -47,14 +68,13 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		pDto.setUpdatedTimeStamp(p.getUpdatedTimeStamp());
 		return pDto;
 	}
-	
+
 	public Products getAll() {
 		List<Product> prs = pRep.findAll();
 		Products products = new Products();
 		products.setProducts(prs);
 		return products;
 	}
-
 
 	public Products getProductsPartText(String partText) {
 		List<Product> prs = pRep.findProductsPartName(partText);
@@ -83,7 +103,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 		pr = pRep.findOne(id);
 		pr.setName(pDto.getName());
 		pr.setPrice(pDto.getPrice());
-		pr.setPriceAfterDiscount(pDto.getPriceAfterDiscount());;
+		pr.setPriceAfterDiscount(pDto.getPriceAfterDiscount());
 		pr.setIterationStepProcessed(1);
 		pr.setProductId(pDto.getProductId());
 		pr.setUpdatedTimeStamp(LocalDateTime.now());
@@ -118,7 +138,7 @@ public class ProductDbServicesImpl implements ProductDbServices {
 	public int getCountNonProcessedProduct() {
 		return pRep.getCountNonProcessedProduct();
 	}
-	
+
 	public int getCountProcessedProduct() {
 		return pRep.getCountProcessedProduct();
 	}
